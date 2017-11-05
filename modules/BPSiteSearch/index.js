@@ -37,7 +37,7 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
           {
             content_type: 'text',
             title: config.keepGoingQuickReply,
-            payload: 'result:' + (startingCount + perPage) + ':' + url
+            payload: 'result:' + (startingCount + config.perPage) + ':' + url
           }
         ];
       } else {
