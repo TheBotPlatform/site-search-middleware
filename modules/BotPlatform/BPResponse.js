@@ -87,6 +87,24 @@ BPResponse.prototype.carousel = function(items, isMultipart) {
     message: part
   };
 };
+BPResponse.prototype.list = function(items, isMultipart) {
+  var part = {
+    attachment: {
+      type: 'template',
+      top_element_style: 'compact',
+      payload: {
+        template_type: 'list',
+        elements: items
+      }
+    }
+  };
+  if (isMultipart) {
+    return part;
+  }
+  return {
+    message: part
+  };
+};
 
 BPResponse.prototype.carouselCard = function(obj) {
   return obj;

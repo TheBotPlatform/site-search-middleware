@@ -119,10 +119,13 @@ BPSiteSearch.prototype.query = function(req, res, query) {
         }));
       }
 
-      if (! items) {
-        return res.json(
-          bp.response.text('Sorry, I can\'t find any ' + config.taxonomy + 's for "' + query + '" 😞')
-        );
+      if (! items || count === 0) {
+        res.json(bp.response.multipart(
+          [
+            bp.response.text('Sorry, I can\'t find any ' + config.taxonomy + ' for "' + query + '" 😞', true)
+          ]
+        ));
+        return;
       }
 
       res.json(bp.response.multipart(
@@ -135,20 +138,21 @@ BPSiteSearch.prototype.query = function(req, res, query) {
 }
 
 BPSiteSearch.prototype.run = function(req, res, config) {
-  var bp = BotPlatform.init(req, res);
-  this.bp = bp;
+  this.bp = BotPlatform.init(req, res);
   this.config = config;
-  var postback = bp.request.getPostback();
-  var query = bp.request.getMessage();
+  var postback = this.bp.request.getPostback();
+  var textMessage = this.bp.request.getMessage();
+
+  // if it's a button or a quick reply
   if (postback) {
     postback = postback.split(':');
     if (postback[0] === 'result') {
       this.singleResult(req, res, postback);
       return;
     }
-  } else if (query) {
+  } else if (textMessage) { // if it's just plain text
     try {
-      this.query(req, res, query);
+      this.query(req, res, textMessage);
       return;
     } catch (e) {
       console.log(e);

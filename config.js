@@ -14,7 +14,8 @@ var config = {
     bad: '15629'
   },
   perPage: 6,
-  keepGoingQuickReply: 'Keep going...'
+  keepGoingQuickReply: 'Keep going...',
+  hubspotKey: ''
 };
 
 module.exports = config;
