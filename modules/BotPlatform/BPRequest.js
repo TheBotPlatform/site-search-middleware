@@ -18,7 +18,6 @@ BPRequest.prototype.getMessage = function() {
 };
 
 BPRequest.prototype.getPostback = function() {
-  console.log(this.req.body);
   try {
     if (this.req.body.item && this.req.body.item.postback && this.req.body.item.postback.payload) {
       return this.req.body.item.postback.payload;
