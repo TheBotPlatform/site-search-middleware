@@ -19,7 +19,7 @@ var fetchFromSheet = function(req, res) {
       return res.json({});
   }
 
-  var url = 'https://thebotplatform.com/help/1/en/search?q=' + term;
+  var search_url = 'https://thebotplatform.com/help/1/en/search?q=' + term;
   var USER_ID = '1285973801516836';
   if (req.body && req.body.item) {
     USER_ID = req.body.item.sender.id;
@@ -28,7 +28,7 @@ var fetchFromSheet = function(req, res) {
     res.json({});
   }
 
-  scraperjs.StaticScraper.create(url)
+  scraperjs.StaticScraper.create(search_url)
     .scrape(function($) {
         return $(".search-result").map(function() {
           var title = $(this).find('h3 a').text();
@@ -52,14 +52,34 @@ var fetchFromSheet = function(req, res) {
     })
     .then(function(news) {
       if (news.length > 10) {
-        news = news.slice(0, 10);
+        news = news.slice(0, 9);
+        news.push({
+          title: 'View all of the results',
+          image_url: 'https://app.thebotplatform.com/img/login-bg.jpg',
+          default_action: {
+            type: 'web_url',
+            url: search_url
+          },
+          buttons: [{
+            type: 'web_url',
+            url: search_url,
+            title: 'View all',
+
+          }]
+        })
       }
 
       // console.log();
       if (! news) {
         return res.json({message: {text: 'Sorry, I can\'t find any docs for "' + term + '" 👩‍⚕️'}});
       }
-
+      var count = news.length + ' docs';
+      if (news.length === 1) {
+        count = '1 doc';
+      }
+      if (count > 10) {
+        count = 'more than 10 docs'
+      }
       var response = {
         recipient: {
           id: USER_ID
@@ -69,7 +89,7 @@ var fetchFromSheet = function(req, res) {
           raw: {
             multipart: [
               {
-                text: 'I\'ve found ' + news.length + ' docs related to "' + term + '". I hope this has been helpful 👩‍⚕️!'
+                text: 'I\'ve found ' + count + ' related to "' + term + '". I hope this has been helpful 👩‍⚕️!'
               },
               {
                 attachment: {
