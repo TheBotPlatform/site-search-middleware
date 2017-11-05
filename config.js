@@ -5,13 +5,16 @@ var config = {
     container: '.search-result',
     title: 'h3 a',
     link: 'h3 a',
+    singleContent: '#topic-header, #topic-body'
   },
   taxonomy: 'doc',
   buttonTitle: 'Learn more',
   feedbackMessages: {
     good: '15625',
     bad: '15629'
-  }
+  },
+  perPage: 6,
+  keepGoingQuickReply: 'Keep going...'
 };
 
 module.exports = config;

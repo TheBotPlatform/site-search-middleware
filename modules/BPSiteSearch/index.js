@@ -7,13 +7,12 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
 
   var startingCount = result[1] * 1;
   var url = result.slice(2).join(':');
-  var perPage = 6;
 
   var bp = this.bp;
   var config = this.config;
   scraperjs.StaticScraper.create(url)
     .scrape(function($) {
-      var x = $('#topic-header, #topic-body').find('h1, h2, h3, h4, h5, p, li').map(function() {
+      var x = $(config.siteStructure.singleContent).find('h1, h2, h3, h4, h5, p, li').map(function() {
         if ($(this).find('img').length > 0) {
           return bp.response.image($(this).find('img').attr('src'), true);
         } else if ($(this).text().trim()) {
@@ -27,17 +26,17 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
     })
     .then(function(content) {
       var newContent = [];
-      for (var i = startingCount; i < startingCount + perPage; i++) {
+      for (var i = startingCount; i < startingCount + config.perPage; i++) {
         if (content[i]) {
           newContent.push(content[i]);
         }
       }
 
-      if (content.length > startingCount + perPage) {
+      if (content.length > startingCount + config.perPage) {
         newContent[newContent.length - 1].quick_replies = [
           {
             content_type: 'text',
-            title: 'Keep going...',
+            title: config.keepGoingQuickReply,
             payload: 'result:' + (startingCount + perPage) + ':' + url
           }
         ];
