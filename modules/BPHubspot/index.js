@@ -4,6 +4,7 @@ var BPHubspot = function() {};
 
 var Hubspot = require('hubspot');
 var hubspot = new Hubspot({ apiKey: process.env.HUBSPOT_API_KEY });
+
 var date = function(time) {
   return ((new Date(time * 1)) + '').split(':')[0];
 };
@@ -73,10 +74,11 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         notes_last_updated = contact.properties.notes_last_contacted.value;
       }
       var response = [];
+      var photo = config.defaultImage;
       if (contact.properties.photo) {
         response.push(bp.response.image(contact.properties.photo.value, true));
+        photo = contact.properties.photo;
       }
-
       response.push(bp.response.text(contact.properties.email.value, true));
       response.push(bp.response.text('Last contact: ' + date(notes_last_updated), true));
       response.push(bp.response.text('Score: ' + contact.properties.hubspotscore.value, true));
@@ -99,6 +101,25 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         buttonTitle: config.buttonTitle,
         image_url: 'https://www.leadsquared.com/wp-content/uploads/2017/08/hubspot-logo.jpg'
       }, 'web_url'));
+      // view on twitter
+      if (contact.properties.linkedinbio) {
+        carousel.push(bp.response.carouselCardLink({
+          title: 'View on LinkedIn',
+          url: contact.properties.linkedinbio.value,
+          buttonTitle: config.buttonTitle,
+          image_url: 'https://brand.linkedin.com/etc/designs/linkedin/katy/global/clientlibs/img/default-share.png'
+        }, 'web_url'));
+      }
+      // view on linkedin
+      if (contact.properties.twitterhandle) {
+        carousel.push(bp.response.carouselCardLink({
+          title: 'View on LinkedIn',
+          url: contact.properties.twitterhandle.value,
+          buttonTitle: config.buttonTitle,
+          image_url: 'https://kt-media-knowtechie.netdna-ssl.com/wp-content/uploads/2017/05/twitter.png'
+        }, 'web_url'));
+      }
+      // view on facebook
       response.push(bp.response.carousel(carousel, true));
       res.json(bp.response.multipart(response));
 
