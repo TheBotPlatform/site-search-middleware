@@ -66,7 +66,7 @@ var fetchFromSheet = function(req, res) {
           raw: {
             multipart: [
               {
-                text: 'I\'ve found ' + news.length + ' docs related to "' + term + '". I hope this helps 👩‍⚕️!'
+                text: 'I\'ve found ' + news.length + ' docs related to "' + term + '". I hope this has been helpful 👩‍⚕️!'
               },
               {
                 attachment: {
