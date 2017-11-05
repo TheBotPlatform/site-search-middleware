@@ -78,7 +78,13 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         response.push(bp.response.image(contact.properties.photo.value, true));
         photo = contact.properties.photo;
       }
-      response.push(bp.response.text('Here\'s all I know about ' + contact.properties.firstname.value + ' ' + contact.properties.lastname.value, true));
+      if ( contact.properties.firstname &&  contact.properties.lastname) {
+        response.push(bp.response.text('Here\'s all I know about ' + contact.properties.firstname.value + ' ' + contact.properties.lastname.value, true));
+
+      } else if ( contact.properties.firstname) {
+        response.push(bp.response.text('Here\'s all I know about ' + contact.properties.firstname.value, true));
+
+      }
 
       var jobtitle = '', company = '', companyUrl = false, bio = '';
       if (contact.properties.jobtitle) {
@@ -99,8 +105,9 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         }
         jobtitle = contact.properties.jobtitle.value;
       }
-      response.push(bp.response.text(jobtitle + ' @ ' + company, true));
-
+      if (jobtitle || company) {
+        response.push(bp.response.text(jobtitle + ' @ ' + company, true));
+      }
       response.push(bp.response.text(contact.properties.email.value, true));
       response.push(bp.response.text('They were last contacted ' + date(notes_last_updated), true));
       var score = contact.properties.hubspotscore.value * 1;
@@ -133,7 +140,7 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         image_url: 'https://www.leadsquared.com/wp-content/uploads/2017/08/hubspot-logo.jpg'
       }, 'web_url'));
       // view on linkedin
-      if (contact.properties.linkedinbio) {
+      if (contact.properties.linkedinbio && contact.properties.linkedinbio.value) {
 
         carousel.push(bp.response.carouselCardLink({
           title: 'Stalk them on LinkedIn',
@@ -143,7 +150,7 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         }, 'web_url'));
       }
       // view on twitter
-      if (contact.properties.twitterhandle) {
+      if (contact.properties.twitterhandle && contact.properties.twitterhandle.value) {
         carousel.push(bp.response.carouselCardLink({
           title: 'Stalk them on Twitter',
           url: 'http://twitter.com/' + contact.properties.twitterhandle.value,
