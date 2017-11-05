@@ -20,7 +20,6 @@ var getTaxonomyCount = function(items, noun) {
 BPHubspot.prototype.singleContactDeals = function(req, res, result) {
   var id = result[1];
   var bp = this.bp;
-  console.log(id);
   hubspot._request({
     method: 'GET',
     path: '/deals/v1/deal/associated/contact/' + id + '/paged',
@@ -169,14 +168,14 @@ BPHubspot.prototype.query = function(req, res, query) {
       console.log('wat');
       res.json(bp.response.multipart(
         [
-          bp.response.text('Sorry, I can\'t find any contacts for "' + query + '" 😞', true)
+          bp.response.text('I can\'t find anyone by the name of "' + query + '" 😞', true)
         ]
       ));
       return;
     }
     res.json(bp.response.multipart(
       [
-        bp.response.text('I have found ' + countText + ' related to "' + query + '". I hope this helps 😀', true),
+        bp.response.text('I\'ve found ' + countText + ' related to "' + query + '" 😀', true),
         bp.response.carousel(items, true)
       ]
     ));
