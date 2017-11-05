@@ -44,7 +44,7 @@ var fetchFromSheet = function(req, res) {
             buttons: [{
               type: 'web_url',
               url: url,
-              title: 'Read more',
+              title: 'Learn more',
 
             }]
           };
@@ -54,7 +54,7 @@ var fetchFromSheet = function(req, res) {
 
       // console.log();
       if (! news) {
-        return res.json({message: {text: 'Sorry, I can\'t find any help docs for "' + term + '"'}});
+        return res.json({message: {text: 'Sorry, I can\'t find any docs for "' + term + '" 👩‍⚕️'}});
       }
 
       var response = {
@@ -66,7 +66,7 @@ var fetchFromSheet = function(req, res) {
           raw: {
             multipart: [
               {
-                text: 'I\'ve found ' + news.length + ' docs related to "' + term + '"'
+                text: 'I\'ve found ' + news.length + ' docs related to "' + term + '". I hope this helps 👩‍⚕️!'
               },
               {
                 attachment: {
@@ -76,10 +76,7 @@ var fetchFromSheet = function(req, res) {
                     elements: news
                   }
                 }
-              },
-              {
-                text: 'Hope this helps!'
-              },
+              }
             ]
           }
         }
