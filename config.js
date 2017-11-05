@@ -8,7 +8,7 @@ var config = {
     singleContent: '#topic-header, #topic-body'
   },
   taxonomy: 'doc',
-  buttonTitle: 'Learn more',
+  buttonTitle: 'Read more',
   feedbackMessages: {
     good: '15625',
     bad: '15629'
