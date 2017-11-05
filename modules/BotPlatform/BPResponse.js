@@ -35,6 +35,24 @@ BPResponse.prototype.text = function(text, isMultipart) {
     message: part
   };
 };
+BPResponse.prototype.textButtons = function(text, buttons, isMultipart) {
+  var part = {
+    attachment: {
+      type: 'template',
+      payload: {
+        template_type: 'button',
+        text: text,
+        buttons: buttons
+      }
+    }
+  };
+  if (isMultipart) {
+    return part;
+  }
+  return {
+    message: part
+  };
+};
 BPResponse.prototype.image = function(url, isMultipart) {
   var part = {
     attachment: {

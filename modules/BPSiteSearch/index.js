@@ -16,7 +16,17 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
         if ($(this).find('img').length > 0) {
           return bp.response.image($(this).find('img').attr('src'), true);
         } else if ($(this).text().trim()) {
-          return bp.response.text($(this).text().trim(), true);
+          if ($(this).find('a').length > 0) {
+            return bp.response.textButtons($(this).text().trim(), [
+              {
+                type: 'postback',
+                payload: 'result:0:' + $(this).find('a').attr('href'),
+                title: config.buttonTitle
+              }
+            ],true);
+          } else {
+            return bp.response.text($(this).text().trim(), true);
+          }
         } else {
           return {};
         }
@@ -41,7 +51,14 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
           }
         ];
       } else {
-        newContent.push(bp.response.text('Did this help?', true))
+        newContent.push(bp.response.textButtons('View the original page', [
+          {
+            type: 'web_url',
+            url: url,
+            title: 'View online'
+          }
+        ], true));
+        newContent.push(bp.response.text('Did this help?', true));
         newContent[newContent.length - 1].quick_replies = [
           {
             content_type: 'text',
