@@ -113,7 +113,7 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
       // view on linkedin
       if (contact.properties.twitterhandle) {
         carousel.push(bp.response.carouselCardLink({
-          title: 'View on LinkedIn',
+          title: 'View on Twitter',
           url: contact.properties.twitterhandle.value,
           buttonTitle: config.buttonTitle,
           image_url: 'https://kt-media-knowtechie.netdna-ssl.com/wp-content/uploads/2017/05/twitter.png'
