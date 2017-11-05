@@ -1,12 +1,12 @@
 var BotPlatform = require('../BotPlatform');
-var config = require('../../config');
 
 var BPHubspot = function() {};
 
-
 var Hubspot = require('hubspot');
 var hubspot = new Hubspot({ apiKey: process.env.HUBSPOT_API_KEY });
-
+var date = function(time) {
+  return ((new Date(time * 1)) + '').split(':')[0];
+};
 var getTaxonomyCount = function(items, noun) {
   if (items.length === 1) {
     return '1 ' + noun;
@@ -26,13 +26,12 @@ BPHubspot.prototype.singleContactDeals = function(req, res, result) {
     qs: { properties: ['dealname', 'dealstage', 'amount', 'launch_date', 'metrics', 'identify_pain', 'closedate'] }
   }, function(e, deals) {
     var response = [];
-    console.log(deals.deals);
     var getProperty = function(d, prop) {
       if (d.properties[prop]) {
-        return d.properties[prop].value
+        return d.properties[prop].value;
       }
       return '';
-    }
+    };
     deals.deals.sort(function(a, b) {
       if (getProperty(a, 'closedate') < getProperty(b, 'closedate')) {
         return -1;
@@ -41,27 +40,21 @@ BPHubspot.prototype.singleContactDeals = function(req, res, result) {
     });
     deals.deals.forEach(function(d) {
 
-
       try {
-        var date = function(time) {
-          return ((new Date(time * 1)) + '').split(':')[0];
-        }
-      var text = getProperty(d, 'dealname') + "\n" +
-                "Amount: £" + getProperty(d, 'amount') + "\n" +
-                "Close: " + date(getProperty(d, 'closedate')) + "\n" +
-                "Launch: " + date(getProperty(d, 'launch_date'));
-      response.push(bp.response.textButtons(text, [{
-        type: 'web_url',
-        url: 'https://app.hubspot.com/contacts/' + d.portalId + '/deal/' + d.dealId + '/',
-        title: 'View on hubspot'
-      }], true));
-    } catch (e) {
-      console.log(e);
-      console.log('hi');
-    }
+
+        var text = getProperty(d, 'dealname') + '\n' +
+                  'Amount: £' + getProperty(d, 'amount') + '\n' +
+                  'Close: ' + date(getProperty(d, 'closedate')) + '\n' +
+                  'Launch: ' + date(getProperty(d, 'launch_date'));
+        response.push(bp.response.textButtons(text, [{
+          type: 'web_url',
+          url: 'https://app.hubspot.com/contacts/' + d.portalId + '/deal/' + d.dealId + '/',
+          title: 'View on hubspot'
+        }], true));
+      } catch (e) {
+        console.log(e);
+      }
     });
-    console.log('hello');
-    console.log(response);
     res.json(bp.response.multipart(response));
   });
 
@@ -75,25 +68,22 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
   var config = this.config;
   try {
     hubspot.contacts.getById(id * 1, function(e, contact) {
+      var notes_last_updated = 0;
+      if (contact.properties.notes_last_contacted) {
+        notes_last_updated = contact.properties.notes_last_contacted.value;
+      }
       var response = [];
-      response.push(bp.response.text(contact.properties.email.value, true));
-      response.push(bp.response.text('Score: ' + contact.properties.hubspotscore.value, true));
-      var photo = config.defaultImage;
       if (contact.properties.photo) {
-        photo = contact.properties.photo.value;
+        response.push(bp.response.image(contact.properties.photo.value, true));
       }
 
-      var carousel = [];
-      // // get last activity
-      // carousel.push(bp.response.carouselCardLink({
-      //   title: 'See latest activity',
-      //   payload: 'contact_notes:' + contact.vid,
-      //   buttonTitle: config.buttonTitle,
-      //   image_url: photo
-      // }, 'postback'));
+      response.push(bp.response.text(contact.properties.email.value, true));
+      response.push(bp.response.text('Last contact: ' + date(notes_last_updated), true));
+      response.push(bp.response.text('Score: ' + contact.properties.hubspotscore.value, true));
 
-      // get deals
-      if (contact.properties.num_associated_deals.value  * 1) {
+      var carousel = [];
+
+      if (contact.properties.num_associated_deals && contact.properties.num_associated_deals.value  * 1) {
         carousel.push(bp.response.carouselCardLink({
           title: 'See ' + contact.properties.num_associated_deals.value + ' deals',
           payload: 'contact_deals:' + contact.vid,
@@ -109,7 +99,6 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         buttonTitle: config.buttonTitle,
         image_url: 'https://www.leadsquared.com/wp-content/uploads/2017/08/hubspot-logo.jpg'
       }, 'web_url'));
-
       response.push(bp.response.carousel(carousel, true));
       res.json(bp.response.multipart(response));
 
@@ -123,7 +112,7 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
 BPHubspot.prototype.query = function(req, res, query) {
   var bp = this.bp;
   var config = this.config;
-  var searchUrl = config.baseUrl + query;
+
   hubspot.contacts.search(query, function(e, contacts) {
     var items = [];
     contacts.contacts.forEach(function(contact) {
@@ -145,7 +134,7 @@ BPHubspot.prototype.query = function(req, res, query) {
         photo = contact.properties.photo.value;
       }
       items.push(bp.response.carouselCardLink({
-        title: firstname + ' ' + lastname,
+        title: firstname + ' ' + lastname + '.',
         subtitle: jobtitle + ' - ' + email,
         payload: 'contact:' + contact.vid,
         buttonTitle: config.buttonTitle,
@@ -156,16 +145,9 @@ BPHubspot.prototype.query = function(req, res, query) {
     var countText = getTaxonomyCount(items, 'contact');
 
     if (count > 10) {
-      items = items.slice(0, 9);
-      items.push(bp.response.carouselCardLink({
-        title: 'View all ' + countText + ' ' + 'contacts',
-        url: searchUrl,
-        buttonTitle: 'View all ' + countText,
-        image_url: config.defaultImage
-      }));
+      items = items.slice(0, 10);
     }
     if (! items || count === 0) {
-      console.log('wat');
       res.json(bp.response.multipart(
         [
           bp.response.text('I can\'t find anyone by the name of "' + query + '" 😞', true)
@@ -195,7 +177,6 @@ BPHubspot.prototype.run = function(req, res, config) {
       this.singleContact(req, res, postback);
       return;
     } else if (postback[0] === 'contact_deals') {
-      console.log('wat');
       this.singleContactDeals(req, res, postback);
       return;
     } else {
