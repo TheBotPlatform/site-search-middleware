@@ -4,7 +4,6 @@ var BPHubspot = function() {};
 
 var Hubspot = require('hubspot');
 var hubspot = new Hubspot({ apiKey: process.env.HUBSPOT_API_KEY });
-
 var date = function(time) {
   return ((new Date(time * 1)) + '').split(':')[0];
 };
@@ -79,15 +78,47 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
         response.push(bp.response.image(contact.properties.photo.value, true));
         photo = contact.properties.photo;
       }
-      response.push(bp.response.text(contact.properties.email.value, true));
-      response.push(bp.response.text('Last contact: ' + date(notes_last_updated), true));
-      response.push(bp.response.text('Score: ' + contact.properties.hubspotscore.value, true));
+      response.push(bp.response.text('Here\'s all I know about ' + contact.properties.firstname.value + ' ' + contact.properties.lastname.value, true));
 
+      var jobtitle = '', company = '', companyUrl = false, bio = '';
+      if (contact.properties.jobtitle) {
+        jobtitle = contact.properties.jobtitle.value;
+      }
+      if (contact['associated-company']) {
+        if (contact['associated-company'].properties.name) {
+          company = contact['associated-company'].properties.name.value;
+        }
+        if (contact['associated-company'].properties.description) {
+          bio = contact['associated-company'].properties.description.value.substring(0, 630) + '...';
+        }
+        if (contact['associated-company'].properties.website) {
+          companyUrl = contact['associated-company'].properties.website.value;
+        }
+        if (contact['associated-company'].properties.website) {
+          companyUrl = contact['associated-company'].properties.website.value;
+        }
+        jobtitle = contact.properties.jobtitle.value;
+      }
+      response.push(bp.response.text(jobtitle + ' @ ' + company, true));
+
+      response.push(bp.response.text(contact.properties.email.value, true));
+      response.push(bp.response.text('They were last contacted ' + date(notes_last_updated), true));
+      var score = contact.properties.hubspotscore.value * 1;
+      if (score < 0) {
+        score = score + ' 👎'
+      }
+      if (score > 0) {
+        score = score + ' 👍'
+      }
+      response.push(bp.response.text('Their score is ' + score, true));
+      if (bio) {
+        response.push(bp.response.text(bio, true));
+      }
       var carousel = [];
 
       if (contact.properties.num_associated_deals && contact.properties.num_associated_deals.value  * 1) {
         carousel.push(bp.response.carouselCardLink({
-          title: 'See ' + contact.properties.num_associated_deals.value + ' deals',
+          title: 'See all ' + contact.properties.num_associated_deals.value + ' deals',
           payload: 'contact_deals:' + contact.vid,
           buttonTitle: config.buttonTitle,
           image_url: photo
@@ -96,29 +127,31 @@ BPHubspot.prototype.singleContact = function(req, res, result) {
 
       // view on hubspot
       carousel.push(bp.response.carouselCardLink({
-        title: 'View on hubspot',
+        title: 'View them on hubspot',
         url: contact['profile-url'],
         buttonTitle: config.buttonTitle,
         image_url: 'https://www.leadsquared.com/wp-content/uploads/2017/08/hubspot-logo.jpg'
       }, 'web_url'));
-      // view on twitter
+      // view on linkedin
       if (contact.properties.linkedinbio) {
+
         carousel.push(bp.response.carouselCardLink({
-          title: 'View on LinkedIn',
+          title: 'Stalk them on LinkedIn',
           url: contact.properties.linkedinbio.value,
           buttonTitle: config.buttonTitle,
           image_url: 'https://brand.linkedin.com/etc/designs/linkedin/katy/global/clientlibs/img/default-share.png'
         }, 'web_url'));
       }
-      // view on linkedin
+      // view on twitter
       if (contact.properties.twitterhandle) {
         carousel.push(bp.response.carouselCardLink({
-          title: 'View on Twitter',
-          url: contact.properties.twitterhandle.value,
+          title: 'Stalk them on Twitter',
+          url: 'http://twitter.com/' + contact.properties.twitterhandle.value,
           buttonTitle: config.buttonTitle,
           image_url: 'https://kt-media-knowtechie.netdna-ssl.com/wp-content/uploads/2017/05/twitter.png'
         }, 'web_url'));
       }
+      console.log(carousel);
       // view on facebook
       response.push(bp.response.carousel(carousel, true));
       res.json(bp.response.multipart(response));
@@ -171,14 +204,14 @@ BPHubspot.prototype.query = function(req, res, query) {
     if (! items || count === 0) {
       res.json(bp.response.multipart(
         [
-          bp.response.text('I can\'t find anyone by the name of "' + query + '" 😞', true)
+          bp.response.text('I can\'t find anyone by the name of "' + query + '" 😡', true)
         ]
       ));
       return;
     }
     res.json(bp.response.multipart(
       [
-        bp.response.text('I\'ve found ' + countText + ' related to "' + query + '" 😀', true),
+        bp.response.text('I\'ve found ' + countText + ' matching "' + query + '" 💼', true),
         bp.response.carousel(items, true)
       ]
     ));
@@ -192,24 +225,25 @@ BPHubspot.prototype.run = function(req, res, config) {
   var textMessage = this.bp.request.getMessage();
 
   // if it's a button or a quick reply
-  if (postback) {
-    postback = postback.split(':');
-    if (postback[0] === 'contact') {
-      this.singleContact(req, res, postback);
-      return;
-    } else if (postback[0] === 'contact_deals') {
-      this.singleContactDeals(req, res, postback);
-      return;
-    } else {
-      console.log(postback);
+  try {
+    if (postback) {
+      postback = postback.split(':');
+      if (postback[0] === 'contact') {
+        this.singleContact(req, res, postback);
+        return;
+      } else if (postback[0] === 'contact_deals') {
+        this.singleContactDeals(req, res, postback);
+        return;
+      } else {
+        console.log(postback);
+      }
+    } else if (textMessage) { // if it's just plain text
+        this.query(req, res, textMessage);
+        return;
+
     }
-  } else if (textMessage) { // if it's just plain text
-    try {
-      this.query(req, res, textMessage);
-      return;
-    } catch (e) {
-      console.log(e);
-    }
+  } catch (e) {
+    console.log(e);
   }
   return res.json({});
 };
