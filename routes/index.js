@@ -60,10 +60,11 @@ var fetchFromSheet = function(req, res) {
       }
 
       if (news.length > 10) {
+        var c = news.length;
         news = news.slice(0, 9);
         news.push({
-          title: 'View all of the results',
-          subtitle: 'I\'ve found other results I can\'t show here too'
+          title: 'View all ' + c + ' results',
+          // subtitle: 'I\'ve found other results I can\'t show here too'
           image_url: 'https://app.thebotplatform.com/img/login-bg.jpg',
           default_action: {
             type: 'web_url',
@@ -72,7 +73,7 @@ var fetchFromSheet = function(req, res) {
           buttons: [{
             type: 'web_url',
             url: search_url,
-            title: 'View all',
+            title: 'View all ' + c,
 
           }]
         })
