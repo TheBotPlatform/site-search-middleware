@@ -51,6 +51,9 @@ var fetchFromSheet = function(req, res) {
         }).get();
     })
     .then(function(news) {
+      if (news.length > 10) {
+        news = news.slice(0, 10);
+      }
 
       // console.log();
       if (! news) {
