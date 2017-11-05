@@ -35,6 +35,23 @@ BPResponse.prototype.text = function(text, isMultipart) {
     message: part
   };
 };
+BPResponse.prototype.image = function(url, isMultipart) {
+  var part = {
+    attachment: {
+      type: "image",
+      payload: {
+        url: url,
+        is_reusable: false
+      }
+    }
+  }
+  if (isMultipart) {
+    return part;
+  }
+  return {
+    message: part
+  };
+}
 BPResponse.prototype.carousel = function(items, isMultipart) {
   var part = {
     attachment: {
@@ -53,21 +70,40 @@ BPResponse.prototype.carousel = function(items, isMultipart) {
   };
 };
 
-BPResponse.prototype.carouselCardLink = function(obj) {
-  return {
-    title: obj.title,
-    image_url: obj.image_url,
-    default_action: {
-      type: 'web_url',
+BPResponse.prototype.carouselCard = function(obj) {
+  return obj;
+}
+
+BPResponse.prototype.carouselCardLink = function(obj, type) {
+  if (type == undefined) {
+    type = 'web_url';
+  }
+
+  if(type === 'web_url') {
+    obj.default_action = {
+      type: type,
       url: obj.url
-    },
-    buttons: [{
-      type: 'web_url',
+    };
+    obj.buttons = [{
+      type: type,
       url: obj.url,
       title: obj.buttonTitle,
-
-    }]
-  };
+    }];
+  } else if (type === 'postback') {
+    // obj.default_action = {
+    //   type: type,
+    //   payload: obj.payload
+    // };
+    obj.buttons = [{
+      type: type,
+      payload: obj.payload,
+      title: obj.buttonTitle,
+    }];
+  }
+  delete obj.buttonTitle;
+  delete obj.url;
+  delete obj.payload;
+  return this.carouselCard(obj)
 };
 
 module.exports = BPResponse;

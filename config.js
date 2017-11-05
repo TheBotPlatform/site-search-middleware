@@ -7,7 +7,11 @@ var config = {
     link: 'h3 a',
   },
   taxonomy: 'doc',
-  buttonTitle: 'Learn more'
+  buttonTitle: 'Learn more',
+  feedbackMessages: {
+    good: '15625',
+    bad: '15629'
+  }
 };
 
 module.exports = config;
