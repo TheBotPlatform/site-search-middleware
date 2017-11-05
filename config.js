@@ -15,7 +15,6 @@ var config = {
   },
   perPage: 6,
   keepGoingQuickReply: 'Keep going...',
-  hubspotKey: ''
 };
 
 module.exports = config;

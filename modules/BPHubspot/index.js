@@ -5,8 +5,7 @@ var BPHubspot = function() {};
 
 
 var Hubspot = require('hubspot');
-var apiKey = config.hubspotKey;
-var hubspot = new Hubspot({ apiKey: apiKey });
+var hubspot = new Hubspot({ apiKey: process.env.HUBSPOT_API_KEY });
 
 var getTaxonomyCount = function(items, noun) {
   if (items.length === 1) {
