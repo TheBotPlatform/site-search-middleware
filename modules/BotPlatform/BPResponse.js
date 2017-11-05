@@ -1,6 +1,7 @@
 var BPResponse = function(req, res) {
   this.req = req;
   this.res = res;
+  this.set = false;
 };
 
 BPResponse.prototype.getUserId = function() {
@@ -17,7 +18,7 @@ BPResponse.prototype.getRecipient = function() {
 };
 
 BPResponse.prototype.multipart = function(items) {
-  return {
+  var response = {
     recipient: this.getRecipient(),
     message: {
       raw: {
@@ -25,6 +26,11 @@ BPResponse.prototype.multipart = function(items) {
       }
     }
   };
+  if (this.set) {
+    response.set = this.set;
+    this.set = false;
+  }
+  return response;
 };
 BPResponse.prototype.text = function(text, isMultipart) {
   var part = {text: text};

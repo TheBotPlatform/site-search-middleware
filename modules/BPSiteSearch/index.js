@@ -10,9 +10,13 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
 
   var bp = this.bp;
   var config = this.config;
+  var title = false;
   scraperjs.StaticScraper.create(url)
     .scrape(function($) {
       var x = $(config.siteStructure.singleContent).find('h1, h2, h3, h4, h5, p, li').map(function() {
+        if (!title) {
+          title = $(this).text().trim();
+        }
         if ($(this).find('img').length > 0) {
           return bp.response.image($(this).find('img').attr('src'), true);
         } else if ($(this).text().trim()) {
@@ -73,6 +77,11 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
           }
         ];
       }
+      bp.response.set = {
+        '$last_single': title,
+        '$last_url': url
+      };
+
       res.json(bp.response.multipart(newContent));
 
 
@@ -118,6 +127,10 @@ BPSiteSearch.prototype.query = function(req, res, query) {
           image_url: config.defaultImage
         }));
       }
+
+      bp.response.set = {
+        '$last_search': query,
+      };
 
       if (! items || count === 0) {
         res.json(bp.response.multipart(
