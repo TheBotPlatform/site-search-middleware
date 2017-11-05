@@ -77,7 +77,7 @@ var fetchFromSheet = function(req, res) {
       if (news.length === 1) {
         count = '1 doc';
       }
-      if (count > 10) {
+      if (news.length > 10) {
         count = 'more than 10 docs'
       }
       var response = {
