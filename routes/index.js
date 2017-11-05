@@ -51,10 +51,19 @@ var fetchFromSheet = function(req, res) {
         }).get();
     })
     .then(function(news) {
+      var count = news.length + ' docs';
+      if (news.length === 1) {
+        count = '1 doc';
+      }
+      if (news.length > 10) {
+        count = 'more than 10 docs'
+      }
+
       if (news.length > 10) {
         news = news.slice(0, 9);
         news.push({
           title: 'View all of the results',
+          subtitle: 'I\'ve found other results I can\'t show here too'
           image_url: 'https://app.thebotplatform.com/img/login-bg.jpg',
           default_action: {
             type: 'web_url',
@@ -73,13 +82,7 @@ var fetchFromSheet = function(req, res) {
       if (! news) {
         return res.json({message: {text: 'Sorry, I can\'t find any docs for "' + term + '" 👩‍⚕️'}});
       }
-      var count = news.length + ' docs';
-      if (news.length === 1) {
-        count = '1 doc';
-      }
-      if (news.length > 10) {
-        count = 'more than 10 docs'
-      }
+
       var response = {
         recipient: {
           id: USER_ID
