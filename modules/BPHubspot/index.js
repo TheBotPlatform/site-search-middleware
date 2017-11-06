@@ -45,18 +45,19 @@ BPHubspot.prototype.singleContactDeals = function(req, res, result) {
         var text = getProperty(d, 'dealname') + '\n' +
                   'Amount: £' + getProperty(d, 'amount') + '\n' +
                   'Close: ' + date(getProperty(d, 'closedate')) + '\n' +
-                  'Metrics: ' + getProperty(d, 'metrics') + '\n' +
-                  'Economic buyer: ' + getProperty(d, 'economic_buyer') + '\n' +
-                  'Decision process: ' + getProperty(d, 'decision_process') + '\n' +
-                  'Decision criteria: ' + getProperty(d, 'decision_critera') + '\n' +
-                  'Identify pain: ' + getProperty(d, 'identify_pain') + '\n' +
-                  'Champion: ' + getProperty(d, 'champion') + '\n' +
                   'Launch: ' + date(getProperty(d, 'launch_date'));
         response.push(bp.response.textButtons(text, [{
           type: 'web_url',
           url: 'https://app.hubspot.com/contacts/' + d.portalId + '/deal/' + d.dealId + '/',
           title: 'View on hubspot'
         }], true));
+        response.push(bp.response.text('Metrics: ' + getProperty(d, 'metrics'), true));
+        response.push(bp.response.text('Economic buyer: ' + getProperty(d, 'economic_buyer'), true));
+        response.push(bp.response.text('Decision process: ' + getProperty(d, 'decision_process'), true));
+        response.push(bp.response.text('Decision criteria: ' + getProperty(d, 'decision_critera'), true));
+        response.push(bp.response.text('Identify pain: ' + getProperty(d, 'identify_pain'), true));
+        response.push(bp.response.text('Champion: ' + getProperty(d, 'champion'), true));
+
       } catch (e) {
         console.log(e);
       }
