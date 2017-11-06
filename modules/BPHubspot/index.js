@@ -45,12 +45,12 @@ BPHubspot.prototype.singleContactDeals = function(req, res, result) {
         var text = getProperty(d, 'dealname') + '\n' +
                   'Amount: £' + getProperty(d, 'amount') + '\n' +
                   'Close: ' + date(getProperty(d, 'closedate')) + '\n' +
-                  'Metrics: ' + date(getProperty(d, 'metrics')) + '\n' +
-                  'Economic buyer: ' + date(getProperty(d, 'economic_buyer')) + '\n' +
-                  'Decision process: ' + date(getProperty(d, 'decision_process')) + '\n' +
-                  'Decision criteria: ' + date(getProperty(d, 'decision_critera')) + '\n' +
-                  'Identify pain: ' + date(getProperty(d, 'identify_pain')) + '\n' +
-                  'Champion: ' + date(getProperty(d, 'champion')) + '\n' +
+                  'Metrics: ' + getProperty(d, 'metrics') + '\n' +
+                  'Economic buyer: ' + getProperty(d, 'economic_buyer') + '\n' +
+                  'Decision process: ' + getProperty(d, 'decision_process') + '\n' +
+                  'Decision criteria: ' + getProperty(d, 'decision_critera') + '\n' +
+                  'Identify pain: ' + getProperty(d, 'identify_pain') + '\n' +
+                  'Champion: ' + getProperty(d, 'champion') + '\n' +
                   'Launch: ' + date(getProperty(d, 'launch_date'));
         response.push(bp.response.textButtons(text, [{
           type: 'web_url',
