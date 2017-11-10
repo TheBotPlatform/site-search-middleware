@@ -176,10 +176,6 @@ BPSiteSearch.prototype.run = function(req, res, config) {
 };
 
 BPSiteSearch.prototype.single = function(req, res, config) {
-  this.isSingleSearch = true;
-
-  // return res.json({hello: 3});
-
   var searchUrl = req.query.url;
   var queryElement = req.query.element;
 

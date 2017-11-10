@@ -13,6 +13,8 @@
     "fuse.js": "^3.2.0",
     "hubspot": "^1.2.0",
     "jade": "~1.9.2",
+    "mailgun": "^0.5.0",
+    "mailgun-js": "^0.13.1",
     "morgan": "~1.5.3",
     "scraperjs": "^1.2.0",
     "serve-favicon": "~2.2.1",
