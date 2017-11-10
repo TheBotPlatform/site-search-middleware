@@ -228,6 +228,8 @@ BPSiteSearch.prototype.single = function(req, res, config) {
 
       }
     });
+  } else {
+    res.json({});
   }
 };
 
