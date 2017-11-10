@@ -197,6 +197,17 @@ BPSiteSearch.prototype.single = function(req, res, config) {
         return {title: $(this).text(), resp: $(this).next().text()};
       });
 
+      var commonWords = [
+        'what',
+        'how',
+        'i',
+        'do',
+      ];
+
+      for (var i = 0; i < commonWords; i++) {
+        textMessage = textMessage.replace(commonWords[i], '');
+      }
+
       var options = {
         keys: ['title'],
         id: 'resp',
