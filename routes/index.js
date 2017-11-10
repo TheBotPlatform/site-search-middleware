@@ -26,4 +26,8 @@ router.get('/', function(req, res, next) {
   BPSiteSearch.run(req, res, config);
 });
 
+router.get('/single', function(req, res, next) {
+  BPSiteSearch.single(req, res, config);
+});
+
 module.exports = router;

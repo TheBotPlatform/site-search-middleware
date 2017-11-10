@@ -1,4 +1,5 @@
 var BotPlatform = require('../BotPlatform');
+var Fuse = require('fuse.js');
 var scraperjs = require('scraperjs');
 
 var BPSiteSearch = function() {};
@@ -172,6 +173,63 @@ BPSiteSearch.prototype.run = function(req, res, config) {
     }
   }
   return res.json({});
+};
+
+BPSiteSearch.prototype.single = function(req, res, config) {
+  this.isSingleSearch = true;
+
+  var searchUrl = req.query.url;
+  var queryElement = req.query.element;
+
+  this.bp = BotPlatform.init(req, res);
+  this.config = config;
+  var postback = this.bp.request.getPostback();
+  var textMessage = this.bp.request.getMessage();
+  var textMessage = 'how do i book travel';
+  var bp = this.bp;
+  // if it's a button or a quick reply
+  if (postback) {
+    return res.json({});
+  } else if (textMessage) { // if it's just plain text
+    scraperjs.StaticScraper.create(searchUrl)
+    .scrape(function($) {
+
+      var items = $(queryElement).map(function() {
+        return {title: $(this).text(), resp: $(this).next().text()};
+      });
+
+      var options = {
+        keys: ['title'],
+        id: 'resp',
+        // tokenize: true,
+        threshold: 0.5,
+        includeMatches: true,
+        shouldSort: true,
+        includeScore: true,
+      }
+      var fuse = new Fuse(items, options)
+
+      return fuse.search(textMessage);
+    }).then(function(items) {
+      if (items.length === 0) {
+        res.json({ message: { text: 'Nothing found for: ' + textMessage}});
+      } else {
+        var text = items[0].item.split('. ');
+
+        var response = [
+            bp.response.text('We think we\'ve found an answer for you.', true),
+            bp.response.text(items[0].matches[0].value, true),
+          ];
+        for (var i = 0; i < text.length; i++) {
+          response.push(bp.response.text(text[i], true));
+        }
+
+        res.json(bp.response.multipart(response));
+        // res.json({ message: { text: 'Nothing found for: ' + textMessage}});
+
+      }
+    });
+  }
 };
 
 module.exports = new BPSiteSearch();
