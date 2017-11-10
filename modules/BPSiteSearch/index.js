@@ -185,7 +185,6 @@ BPSiteSearch.prototype.single = function(req, res, config) {
   this.config = config;
   var postback = this.bp.request.getPostback();
   var textMessage = this.bp.request.getMessage();
-  var textMessage = 'how do i book travel';
   var bp = this.bp;
   // if it's a button or a quick reply
   if (postback) {
