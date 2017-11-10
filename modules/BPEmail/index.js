@@ -13,32 +13,33 @@ BPEmail.prototype.email = function(req, res, config) {
   var email = req.query.email;
   var requiredPostback = req.query.postback;
 
-
   var bp = this.bp;
+  try {
+    if (postback && postback === requiredPostback) {
 
-  if (postback && postback === requiredPostback) {
+      var mailgun = require('mailgun-js')({apiKey: config.mailgun.apiKey, domain: config.mailgun.domain});
 
-    var mailgun = require('mailgun-js')({apiKey: config.mailgun.apiKey, domain: config.mailgun.domain});
+      var text = JSON.stringify(req.body.fbuser.state.vars, true);
 
-    var text = JSON.stringify(this.req.body);
+      var data = {
+        from: config.mailgun.from,
+        to: email,
+        subject: 'New form submission from The Bot Platform',
+        text: text
+      };
 
-    var data = {
-      from: config.mailgun.from,
-      to: email,
-      subject: 'New form submission from The Bot Platform',
-      text: text
-    };
-
-    mailgun.messages().send(data, function (error, body) {
-      console.log(body);
-    });
-    console.log('DONE');
+      mailgun.messages().send(data, function (error, body) {
+        console.log(body);
+      });
 
 
-    return res.json({});
-  } else { // if it's just plain text
+      return res.json({});
+    } else { // if it's just plain text
 
-    res.json({});
+      res.json({});
+    }
+  } catch (e) {
+    console.log(e);
   }
 
 };
