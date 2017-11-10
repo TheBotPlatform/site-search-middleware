@@ -31,8 +31,8 @@ router.post('/single', function(req, res, next) {
   BPSiteSearch.single(req, res, config);
 });
 
-// http://localhost:3000/email?email=sydlawrence@gmail.com&postback=@BP:MESSAGE:27
-router.post('/email', function(req, res, next) {
+// http://localhost:3000/email?email=sydlawrence@gmail.com&postback=@BP:MESSAGE:16085
+router.get('/email', function(req, res, next) {
   config.mailgun = {
     apiKey: 'key-3e7fac6568ef30a5a8496e648b32cbb3',
     domain: 'mg.salutemusic.uk',

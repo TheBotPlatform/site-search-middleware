@@ -20,7 +20,7 @@ BPEmail.prototype.email = function(req, res, config) {
 
     var mailgun = require('mailgun-js')({apiKey: config.mailgun.apiKey, domain: config.mailgun.domain});
 
-    var text = JSON.stringify(this.req.body.fbuser.state.vars);
+    var text = JSON.stringify(this.req.body);
 
     var data = {
       from: config.mailgun.from,
