@@ -19,12 +19,8 @@ BPEmail.prototype.email = function(req, res, config) {
   if (postback && postback === requiredPostback) {
 
     var mailgun = require('mailgun-js')({apiKey: config.mailgun.apiKey, domain: config.mailgun.domain});
-    var text = 'Hello World';
 
-    var text = '';
-    for (var i in this.req.body.fbuser.state.vars) {
-      text += i + "\n" + this.req.body.fbuser.state.vars[i];
-    }
+    var text = JSON.stringify(this.req.body.fbuser.state.vars);
 
     var data = {
       from: config.mailgun.from,
