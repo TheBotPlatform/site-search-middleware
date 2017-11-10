@@ -178,6 +178,8 @@ BPSiteSearch.prototype.run = function(req, res, config) {
 BPSiteSearch.prototype.single = function(req, res, config) {
   this.isSingleSearch = true;
 
+  // return res.json({hello: 3});
+
   var searchUrl = req.query.url;
   var queryElement = req.query.element;
 
@@ -185,6 +187,7 @@ BPSiteSearch.prototype.single = function(req, res, config) {
   this.config = config;
   var postback = this.bp.request.getPostback();
   var textMessage = this.bp.request.getMessage();
+
   var bp = this.bp;
   // if it's a button or a quick reply
   if (postback) {
@@ -196,6 +199,7 @@ BPSiteSearch.prototype.single = function(req, res, config) {
       var items = $(queryElement).map(function() {
         return {title: $(this).text(), resp: $(this).next().text()};
       });
+
 
       var commonWords = [
         'what',
@@ -222,7 +226,7 @@ BPSiteSearch.prototype.single = function(req, res, config) {
       return fuse.search(textMessage);
     }).then(function(items) {
       if (items.length === 0) {
-        res.json({ message: { text: 'Nothing found for: ' + textMessage}});
+        res.json(bp.response.multipart([bp.response.text('Nothing found for: ' + textMessage)]));
       } else {
         var text = items[0].item.split('. ');
 
@@ -236,12 +240,12 @@ BPSiteSearch.prototype.single = function(req, res, config) {
 
         res.json(bp.response.multipart(response));
         // res.json({ message: { text: 'Nothing found for: ' + textMessage}});
-
       }
     });
   } else {
     res.json({});
   }
+
 };
 
 module.exports = new BPSiteSearch();
