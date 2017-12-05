@@ -31,12 +31,12 @@ router.post('/single', function(req, res, next) {
   BPSiteSearch.single(req, res, config);
 });
 
-// http://localhost:3000/email?email=sydlawrence@gmail.com&postback=@BP:MESSAGE:16085
+// http://localhost:3000/email?email=hello@thebotplatform.com&postback=@BP:MESSAGE:16085
 router.post('/email', function(req, res, next) {
   config.mailgun = {
-    apiKey: 'key-3e7fac6568ef30a5a8496e648b32cbb3',
-    domain: 'mg.salutemusic.uk',
-    from: 'The Bot Platform <thebotplatform@mg.salutemusic.uk>'
+    apiKey: 'APIKEY',
+    domain: 'DOMAIN',
+    from: 'The Bot Platform <EMAIL>'
   };
   BPEmail.email(req, res, config);
 });
