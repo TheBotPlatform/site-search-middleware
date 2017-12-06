@@ -1,0 +1,6 @@
+{
+  "phabricator.uri" : "https://phabricator.wmas.it/",
+  "aliases": {
+      "cleanup": ["!git branch | cut -c3- | grep arcpatch- | xargs -n1 git branch -D"]
+  }
+}
