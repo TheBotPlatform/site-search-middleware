@@ -1,9 +1,9 @@
 var BotPlatform = require('../BotPlatform');
-var Fuse = require('fuse.js');
 var scraperjs = require('scraperjs');
 
 var BPSiteSearch = function() {};
 
+// used when retreiving a single result
 BPSiteSearch.prototype.singleResult = function(req, res, result) {
 
   var startingCount = result[1] * 1;
@@ -12,7 +12,7 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
   var bp = this.bp;
   var config = this.config;
   var title = false;
-  scraperjs.StaticScraper.create(url)
+  scraperjs.StaticScraper.create({url: url, headers: {'User-Agent': config.userAgent}})
     .scrape(function($) {
       var x = $(config.siteStructure.singleContent).find('h1, h2, h3, h4, h5, p, li').map(function() {
         if (!title) {
@@ -63,20 +63,22 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
             title: 'View online'
           }
         ], true));
-        newContent.push(bp.response.text('Did this help?', true));
-        newContent[newContent.length - 1].quick_replies = [
-          {
-            content_type: 'text',
-            title: '👍',
-            payload: '@BP:MESSAGE:' + config.feedbackMessages.good
-          },
+        if (shouldAskForFeedback) {
+          newContent.push(bp.response.text('Did this help?', true));
+          newContent[newContent.length - 1].quick_replies = [
+            {
+              content_type: 'text',
+              title: '👍',
+              payload: config.feedbackMessages.good
+            },
 
-          {
-            content_type: 'text',
-            title: '👎',
-            payload: '@BP:MESSAGE:' + config.feedbackMessages.bad
-          }
-        ];
+            {
+              content_type: 'text',
+              title: '👎',
+              payload: config.feedbackMessages.bad
+            }
+          ];
+        }
       }
       bp.response.set = {
         '$last_single': title,
@@ -89,18 +91,30 @@ BPSiteSearch.prototype.singleResult = function(req, res, result) {
     });;
 };
 
+// used to query a search url
 BPSiteSearch.prototype.query = function(req, res, query) {
   var bp = this.bp;
   var config = this.config;
   var searchUrl = config.baseUrl + query;
-
-  scraperjs.StaticScraper.create(searchUrl)
+  scraperjs.StaticScraper.create({url: searchUrl, headers: {'User-Agent': config.userAgent}})
     .scrape(function($) {
       return $(config.siteStructure.container).map(function() {
+
+        var singleUrl = $(this).find(config.siteStructure.link).attr('href');
+        if (config.siteStructure.link === false) {
+          singleUrl = $(this).attr('href');
+        }
+
         return bp.response.carouselCardLink({
           title: $(this).find(config.siteStructure.title).text(),
-          payload: 'result:0:' + $(this).find(config.siteStructure.link).attr('href'),
+          subtitle: $(this).find(config.siteStructure.subtitle).text(),
+          payload: 'result:0:' + singleUrl,
           buttonTitle: config.buttonTitle,
+          extraButtons: [{
+            title: 'View online',
+            type: 'web_url',
+            url: singleUrl
+          }],
           image_url: config.defaultImage
         }, 'postback');
       }).get();
@@ -108,12 +122,12 @@ BPSiteSearch.prototype.query = function(req, res, query) {
     .then(function(items) {
       var getTaxonomyCount = function(items, noun) {
         if (items.length === 1) {
-          return '1 ' + noun;
+          return 'is 1 ' + noun;
         }
         if (items.length > 10) {
-          return 'more than 10 ' + noun + 's';
+          return 'are more than 10 ' + noun + 's';
         }
-        return items.length + ' ' + noun + 's';
+        return 'are ' + items.length + ' ' + noun + 's';
       };
 
       var count = items.length;
@@ -127,6 +141,7 @@ BPSiteSearch.prototype.query = function(req, res, query) {
           buttonTitle: 'View all ' + countText,
           image_url: config.defaultImage
         }));
+        console.log(items);
       }
 
       bp.response.set = {
@@ -134,17 +149,13 @@ BPSiteSearch.prototype.query = function(req, res, query) {
       };
 
       if (! items || count === 0) {
-        res.json(bp.response.multipart(
-          [
-            bp.response.text('Sorry, I can\'t find any ' + config.taxonomy + ' for "' + query + '" 😞', true)
-          ]
-        ));
+        res.json(false);
         return;
       }
 
       res.json(bp.response.multipart(
         [
-          bp.response.text('There are ' + countText + ' related to "' + query + '". I hope this helps 😀', true),
+          bp.response.text('There ' + countText + ' related to "' + query + '". I hope this helps 😀', true),
           bp.response.carousel(items, true)
         ]
       ));
@@ -173,75 +184,6 @@ BPSiteSearch.prototype.run = function(req, res, config) {
     }
   }
   return res.json({});
-};
-
-BPSiteSearch.prototype.single = function(req, res, config) {
-  var searchUrl = req.query.url;
-  var queryElement = req.query.element;
-
-  this.bp = BotPlatform.init(req, res);
-  this.config = config;
-  var postback = this.bp.request.getPostback();
-  var textMessage = this.bp.request.getMessage();
-
-  var bp = this.bp;
-  // if it's a button or a quick reply
-  if (postback) {
-    return res.json({});
-  } else if (textMessage) { // if it's just plain text
-    scraperjs.StaticScraper.create(searchUrl)
-    .scrape(function($) {
-
-      var items = $(queryElement).map(function() {
-        return {title: $(this).text(), resp: $(this).next().text()};
-      });
-
-
-      var commonWords = [
-        'what',
-        'how',
-        'i',
-        'do',
-      ];
-
-      for (var i = 0; i < commonWords; i++) {
-        textMessage = textMessage.replace(commonWords[i], '');
-      }
-
-      var options = {
-        keys: ['title'],
-        id: 'resp',
-        // tokenize: true,
-        threshold: 0.5,
-        includeMatches: true,
-        shouldSort: true,
-        includeScore: true,
-      }
-      var fuse = new Fuse(items, options)
-
-      return fuse.search(textMessage);
-    }).then(function(items) {
-      if (items.length === 0) {
-        res.json(bp.response.multipart([bp.response.text('Nothing found for: ' + textMessage)]));
-      } else {
-        var text = items[0].item.split('. ');
-
-        var response = [
-            bp.response.text('We think we\'ve found an answer for you.', true),
-            bp.response.text(items[0].matches[0].value, true),
-          ];
-        for (var i = 0; i < text.length; i++) {
-          response.push(bp.response.text(text[i], true));
-        }
-
-        res.json(bp.response.multipart(response));
-        // res.json({ message: { text: 'Nothing found for: ' + textMessage}});
-      }
-    });
-  } else {
-    res.json({});
-  }
-
 };
 
 module.exports = new BPSiteSearch();

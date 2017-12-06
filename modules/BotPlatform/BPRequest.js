@@ -31,6 +31,6 @@ BPRequest.prototype.getPostback = function() {
     return false;
   }
   return false;
-}
+};
 
 module.exports = BPRequest;

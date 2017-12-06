@@ -62,20 +62,21 @@ BPResponse.prototype.textButtons = function(text, buttons, isMultipart) {
 BPResponse.prototype.image = function(url, isMultipart) {
   var part = {
     attachment: {
-      type: "image",
+      type: 'image',
       payload: {
         url: url,
         is_reusable: false
       }
     }
-  }
+  };
+
   if (isMultipart) {
     return part;
   }
   return {
     message: part
   };
-}
+};
 BPResponse.prototype.carousel = function(items, isMultipart) {
   var part = {
     attachment: {
@@ -114,14 +115,14 @@ BPResponse.prototype.list = function(items, isMultipart) {
 
 BPResponse.prototype.carouselCard = function(obj) {
   return obj;
-}
+};
 
 BPResponse.prototype.carouselCardLink = function(obj, type) {
   if (type == undefined) {
     type = 'web_url';
   }
 
-  if(type === 'web_url') {
+  if (type === 'web_url') {
     obj.default_action = {
       type: type,
       url: obj.url
@@ -132,20 +133,22 @@ BPResponse.prototype.carouselCardLink = function(obj, type) {
       title: obj.buttonTitle,
     }];
   } else if (type === 'postback') {
-    // obj.default_action = {
-    //   type: type,
-    //   payload: obj.payload
-    // };
     obj.buttons = [{
       type: type,
       payload: obj.payload,
       title: obj.buttonTitle,
     }];
   }
+  if (obj.extraButtons) {
+    for (var i = 0; i < obj.extraButtons.length; i++) {
+      obj.buttons.push(obj.extraButtons[i]);
+    }
+    delete obj.extraButtons;
+  }
   delete obj.buttonTitle;
   delete obj.url;
   delete obj.payload;
-  return this.carouselCard(obj)
+  return this.carouselCard(obj);
 };
 
 module.exports = BPResponse;
